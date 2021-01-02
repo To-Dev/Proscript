@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import random
+import sys
 from tabulate import tabulate
 
 file = open("Team.txt")
@@ -33,7 +34,7 @@ def task_distribution(prosit_nb, group):
     return result_array
         
 def check_role(member, role):
-    return (member['roles_state']//roles[role])%2 == 0
+    return (member['roles_state'] // roles[role])%2 == 0
 
 def give_role(group, group_sorted, role):
     for member in group_sorted:
@@ -49,13 +50,14 @@ def give_role(group, group_sorted, role):
                     break
             group_sorted.remove(member)
             return member['name']
-                
-    
 
 group = load_group(file)
 
 random.shuffle(group)
 
-prosit_nb = int(input('How many prosit in the UE?\n'))
+if len(sys.argv) < 2:
+    prosit_nb = int(input('How many prosit in the UE?\n'))
+else:
+    prosit_nb = int(sys.argv[1])
 
 print(tabulate(task_distribution(prosit_nb, group), ['Prosit', 'Animateur', 'Secretaire', 'Scribe', 'Gestionnaire'], tablefmt='grid'))
