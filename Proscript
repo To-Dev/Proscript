@@ -1,63 +1,30 @@
 #!/usr/bin/python3
 
-import random
-import sys
-from tabulate import tabulate
+import sys, random
+from dispenser import dispenser
+from arghandler import arghandler
+from outputmanager import outputmanager
 
-file = open("Team.txt")
-roles = {'chairperson': 8, 'secretary': 4, 'scribe': 2, 'timekeeper': 1}
+def main(argv):
+    
+    my_arg_handler = arghandler(argv)
+
+    if my_arg_handler.ask_for_help:
+        outputmanager.help()
+        sys.exit(2)
+    try:
+        file = open(my_arg_handler.list_path)
+    except:
+        print("File not accessible")
+        sys.exit(2)
         
-def load_group(file):
-    group_array = []
-    for line in file:
-        group_array.append({
-            'name' : line.replace('\n', ''),
-            'roles_nb' : 0,
-            'roles_state' : 0
-            })
-    return group_array
+    prosit_nb = my_arg_handler.handle_prosit_nb()
+    
+    group = dispenser.load_group(file)
 
-def sort_roles_nb(val): 
-    return val['roles_nb']  
+    random.shuffle(group)
 
-def task_distribution(prosit_nb, group):
-    result_array=[]
-    for prosit in range(prosit_nb):
-        prosit_roles = [prosit + 1]
-        group_clone = group.copy()
-        group_clone.sort(key=sort_roles_nb)
-        prosit_roles.append(give_role(group, group_clone, 'chairperson'))
-        prosit_roles.append(give_role(group, group_clone, 'secretary'))
-        prosit_roles.append(give_role(group, group_clone, 'scribe'))
-        prosit_roles.append(give_role(group, group_clone, 'timekeeper'))
-        result_array.append(prosit_roles)
-    return result_array
-        
-def check_role(member, role):
-    return (member['roles_state'] // roles[role])%2 == 0
+    outputmanager.result(dispenser.task_distribution(prosit_nb, group), my_arg_handler.output_type)
 
-def give_role(group, group_sorted, role):
-    for member in group_sorted:
-        if (check_role(member, role)):
-            if (member['roles_state'] + roles[role] == 15):
-                new_state = 0
-            else:
-                new_state = member['roles_state'] + roles[role]
-            for people in group:
-                if (people['name'] == member['name']):
-                    people['roles_state'] = new_state
-                    people['roles_nb'] +=1
-                    break
-            group_sorted.remove(member)
-            return member['name']
-
-group = load_group(file)
-
-random.shuffle(group)
-
-if len(sys.argv) < 2:
-    prosit_nb = int(input('How many prosit in the UE?\n'))
-else:
-    prosit_nb = int(sys.argv[1])
-
-print(tabulate(task_distribution(prosit_nb, group), ['Prosit', 'Animateur', 'Secretaire', 'Scribe', 'Gestionnaire'], tablefmt='grid'))
+if __name__ == "__main__":
+   main(sys.argv[1:])
