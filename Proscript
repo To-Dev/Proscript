@@ -1,37 +1,30 @@
 #!/usr/bin/python3
 
-import sys, getopt, random
-from tabulate import tabulate
+import sys, random
 from dispenser import dispenser
+from arghandler import arghandler
+from outputmanager import outputmanager
 
 def main(argv):
     
-    file = open("Team.txt")
+    my_arg_handler = arghandler(argv)
 
-    try:
-        opts, args = getopt.getopt(argv,"hl",["help","list=",])
-    except getopt.GetoptError:
-        print('./Proscript <prositnumber> -l <customlist>')
+    if my_arg_handler.ask_for_help:
+        outputmanager.help()
         sys.exit(2)
-    for opt, arg in opts:
-        print(opt + ' ' + arg)
-        if opt in ("-h", "--help"):
-            print('./Proscript <prositnumber> -l <customlist>')
-            sys.exit()
-        elif opt in ("-l", "--list"):
-            file = open(arg)
-
     try:
-        prosit_nb = int(args[0])
+        file = open(my_arg_handler.list_path)
     except:
-        print('Prosit number is not actually a number please enter a valid one')
+        print("File not accessible")
         sys.exit(2)
         
+    prosit_nb = my_arg_handler.handle_prosit_nb()
+    
     group = dispenser.load_group(file)
 
     random.shuffle(group)
-                            
-    print(tabulate(dispenser.task_distribution(prosit_nb, group), ['Prosit', 'Animateur', 'Secretaire', 'Scribe', 'Gestionnaire'], tablefmt='grid'))
+
+    outputmanager.result(dispenser.task_distribution(prosit_nb, group), my_arg_handler.output_type)
 
 if __name__ == "__main__":
    main(sys.argv[1:])
