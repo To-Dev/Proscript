@@ -1,0 +1,30 @@
+#!/usr/bin/python3
+
+import sys, random
+from dispenser import dispenser
+from arghandler import arghandler
+from outputmanager import outputmanager
+
+def main(argv):
+    
+    my_arg_handler = arghandler(argv)
+
+    if my_arg_handler.ask_for_help:
+        outputmanager.help()
+        sys.exit(2)
+    try:
+        file = open(my_arg_handler.list_path)
+    except:
+        print("File not accessible")
+        sys.exit(2)
+        
+    prosit_nb = my_arg_handler.handle_prosit_nb()
+    
+    group = dispenser.load_group(file)
+
+    random.shuffle(group)
+
+    outputmanager.result(dispenser.task_distribution(prosit_nb, group), my_arg_handler.output_type)
+
+if __name__ == "__main__":
+   main(sys.argv[1:])
